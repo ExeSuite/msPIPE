@@ -28,6 +28,16 @@ RUN apt-get update -y && \
 				apt-get install libssl-dev -y && \
 				apt-get install libbz2-dev -y && \
 				apt-get update -y
+				
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        dirmngr \
+        gnupg \
+        ca-certificates \
+        apt-transport-https \
+        wget \
+        sed && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN cpanm \
       Math::Gauss \
@@ -56,13 +66,42 @@ RUN add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-
 
 
 ## R 4.1.3
-RUN apt-get update -y
-RUN apt-get install gdebi-core -y
-RUN export R_VERSION=4.1.3
-RUN curl -O https://cdn.rstudio.com/r/ubuntu-1804/pkgs/r-4.1.3_1_amd64.deb
-RUN gdebi -nq /r-4.1.3_1_amd64.deb
-RUN ln -s /opt/R/4.1.3/bin/R /usr/local/bin/R
-RUN ln -s /opt/R/4.1.3/bin/Rscript /usr/local/bin/Rscript
+# RUN apt-get update -y
+# RUN apt-get install gdebi-core -y
+# RUN export R_VERSION=4.1.3
+# RUN curl -O https://cdn.rstudio.com/r/ubuntu-1804/pkgs/r-4.1.3_1_amd64.deb
+# RUN gdebi -nq /r-4.1.3_1_amd64.deb
+# RUN ln -s /opt/R/4.1.3/bin/R /usr/local/bin/R
+# RUN ln -s /opt/R/4.1.3/bin/Rscript /usr/local/bin/Rscript
+
+## R 4.3.1
+# 匯入 CRAN 金鑰（apt-key 已淘汰，使用獨立金鑰檔）
+RUN wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc \
+    | tee /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc >/dev/null
+
+# 新增 bionic-cran40 軟體來源
+RUN echo "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/" \
+    | tee /etc/apt/sources.list.d/cran-r.list
+
+# 更新索引並（可選）查看可用版本，再安裝 R 4.3.1（bionic 對應 1804 後綴）
+RUN apt-get update && \
+    apt-cache policy r-base | sed -n '1,120p' && \
+    apt-get install -y --no-install-recommends \
+        r-base=4.3.1-4.1804.0 \
+        r-base-core=4.3.1-4.1804.0 \
+        r-recommended=4.3.1-4.1804.0 && \
+    rm -rf /var/lib/apt/lists/*
+
+sudo apt-get install -y --no-install-recommends software-properties-common dirmngr gnupg ca-certificates apt-transport-https
+
+# 匯入 CRAN 金鑰（apt-key 已淘汰，使用獨立金鑰檔）
+wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc \
+ | sudo tee /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc >/dev/null
+
+# 新增 bionic-cran40 軟體來源
+echo "deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/" \
+ | sudo tee /etc/apt/sources.list.d/cran-r.list
+
 
 
 RUN apt-get install -y pigz
