@@ -38,8 +38,25 @@ PMDsegments.gr <- NA;
 library(rtracklayer);
 session <- browserSession();
 genome(session) <- assembly_version;
-query <- ucscTableQuery(session, "cpgIslandExt");
-CpGislands.gr <- track(query);
+# query <- ucscTableQuery(session, "cpgIslandExt");
+# CpGislands.gr <- track(query);
+
+## LLM another solution
+# qry <- ucscTableQuery(session, table = "cpgIslandExt")
+# cpg_tbl <- getTable(qry)
+# CpGislands.gr <- makeGRangesFromDataFrame(
+#     cpg_tbl,
+#     seqnames.field = "chrom",
+#     start.field    = "chromStart",
+#     end.field      = "chromEnd",
+#     keep.extra.columns = TRUE,
+#     starts.in.df.are.0based = TRUE
+# )
+# GenomeInfoDb::genome(CpGislands.gr) <- assembly_version
+
+query <- ucscTableQuery(session, table = "cpgIslandExt")
+CpGislands.gr <- track(query)
+
 genome(CpGislands.gr) <- NA;
 CpGislands.gr <- suppressWarnings(resize(CpGislands.gr, 5000, fix="center"));
 stats <- calculateFDRs(m=meth.gr, CGIs=CpGislands.gr, PMDs=PMDsegments.gr, num.cores=cpu);
