@@ -346,8 +346,9 @@ def Reads_preprocessing(callD):
 	
 	
 		fastqc_args = f'"-f fastq -o {dataD} -d {libD} -t 6"'
-		cmd_trimGalor = f'{prog.trim_galore} --fastqc --fastqc_args {fastqc_args} --phred33 --gzip --length 20 -o {dataD} --cores {core}'
-
+		# cmd_trimGalor = f'{prog.trim_galore} --fastqc --fastqc_args {fastqc_args} --phred33 --gzip --length 20 -o {dataD} --cores {core}'
+		cmd_trimGalor = f'{prog.trim_galore} --fastqc --fastqc_args {fastqc_args} --phred33 --gzip --length 20 --nextseq 20 -o {dataD} --cores {core}'
+		
 		if LIB.lib_type == 'P':
 			cmd_trimGalor += f' --paired {LIB.file_1} {LIB.file_2}'
 		elif LIB.lib_type == 'S':
@@ -507,7 +508,8 @@ def Bismark_calling(callD):
 
 		##3.calling:  Methylation extractor
 		if not args.skip_calling:
-			cmd = f'{prog.bismark_methylation_extractor} -{LIB.lib_type.lower()} --multicore {core} --no_overlap --comprehensive --gzip --CX --cytosine_report --genome_folder {refD}/ -o {methylD} {LIB.bam_file}'
+			# cmd = f'{prog.bismark_methylation_extractor} -{LIB.lib_type.lower()} --multicore {core} --no_overlap --comprehensive --gzip --CX --cytosine_report --genome_folder {refD}/ -o {methylD} {LIB.bam_file}'
+			cmd = f'{prog.bismark_methylation_extractor} -{LIB.lib_type.lower()} --multicore {core} --no_overlap --ignore_r2 2 --ignore_3prime_r2 1 --comprehensive --gzip --CX --cytosine_report --genome_folder {refD}/ -o {methylD} {LIB.bam_file}'
 			callingCMD_list.append( [cmd, f'{libD}/logs/log.Bismark_call.txt',log_proc ] )
 		
 		##4.bedGraph
