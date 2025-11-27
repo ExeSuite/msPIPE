@@ -1,0 +1,78 @@
+[DMR]
+ANALYSIS1 = 24M, 3M
+
+[REFERENCE]
+UCSC_NAME = mm10
+
+[LIB1]
+SAMPLE_NAME = 24M
+LIB_NAME = 24M_rep1
+LIB_TYPE = P
+FILE_1 = /msPIPE/data/SRX6589858_1.fastq.gz
+FILE_2 = /msPIPE/data/SRX6589858_2.fastq.gz
+
+[LIB2]
+SAMPLE_NAME = 24M
+LIB_NAME = 24M_rep2
+LIB_TYPE = P
+FILE_1 = /msPIPE/data/SRX6589859_1.fastq.gz
+FILE_2 = /msPIPE/data/SRX6589859_2.fastq.gz
+
+
+
+:%s#/mnt/PharusDX_Zhupei/DSD/Methylation/Link/FASTQ/#/msPIPE/data/#g
+
+
+docker run -v /mnt/PharusDX_Zhupei/DSD/Methylation/Link/FASTQ:/msPIPE/data:ro -v /mnt/2Tdisk/timmy/methylation_working/msPIPE/reference:/msPIPE/reference -v /mnt/2Tdisk/timmy/methylation_working/msPIPE/pharus_test_20251015:/work_dir/ jkimlab/mspipe:latest msPIPE.py -p params_test.conf -o result
+
+
+ sudo docker run -v /mnt/PharusDX_Zhupei/DSD/Methylation/Link/FASTQ:/msPIPE/data:ro -v /data/timmy/methylation_working/msPIPE/reference:/msPIPE/reference -v /data/timmy/methylation_working/msPIPE/pharus_test_20251015:/work_dir/ my_mspipe:modified python3 /msPIPE/msPIPE.py -p /work_dir/params_one_sample.conf -o stan2_result -c 40
+
+
+ bedtools intersect -wa -wb -a /work_dir/result/Analysis/annotations/promoter.bed -b /work_dir/result/Analysis/DMR/stan.Chester/reform.DMC_q0.5.bed > /work_dir/result/Analysis/DMR/stan.Chester/intersection.DMC2Promoter.txt
+
+sudo docker commit funny_mirzakhani debug_image
+sudo docker run -it -v /data/timmy/methylation_working/msPIPE/pharus_test_20251015:/work_dir/ debug_image bash
+
+sudo docker run -it --rm -v /data/timmy/methylation_working:/home/methylation_working/ bioconductor/bioconductor:RELEASE_3_18 bash
+
+
+
+tail -n +2 /work_dir/result/Analysis/DMR/stan.Chester/reform.DMC_q0.5.bed \
+> /work_dir/result/Analysis/DMR/stan.Chester/reform.DMC_q0.5.nohdr.bed
+
+
+
+ python3 /msPIPE/msPIPE.py -p /work_dir/params_test2.conf -o result -c 40 -m /work_dir/result/methylCALL --skip_mapping --skip_calling 
+
+
+ python3 msPIPE_mod.py -p params_one_sample.conf -o pharus_test_20251015/stan1_result/ -c 40 -m pharus_test_20251015/stan1_result/methylCALL/ --skip_mapping --skip_calling 
+
+ python3 msPIPE.py -p /work_dir/params_one_sample.conf -o /work_dir/stan1_result/ -c 40 -m /work_dir/stan1_result/methylCALL/ --skip_mapping --skip_calling 
+
+  python3 msPIPE.py -p /work_dir/params_one_sample.conf -o /work_dir/stan1_result_20251111/ -c 40
+
+
+DMR Analysis ...------------------------------------------------------------
+DMR .. start
+stan, Chester
+$ Rscript /work_dir/result/Analysis/DMR/stan.Chester/methylkit/run_methylKit.R
+$ /msPIPE/bin/script/getDMC.py /work_dir/result/Analysis/DMR/stan.Chester/methylkit/CpG_united_filtered_meth.txt /work_dir/result/Analysis/DMR/stan.Chester/methylkit/CpG_united_filtered_raw_DMBs.txt 0.5 0,1 /work_dir/result/Analysis/DMR/stan.Chester/DMC_q0.5.bed stan Chester
+$ bedtools intersect -wa -wb -a /work_dir/result/Analysis/annotations/promoter.bed -b /work_dir/result/Analysis/DMR/stan.Chester/reform.DMC_q0.5.nohdr.bed > /work_dir/result/Analysis/DMR/stan.Chester/intersection.DMC2Promoter.txt
+
+*** There's a problem executing the upper command.
+*** check logfile > stdout
+
+$ cut -f 4 /work_dir/result/Analysis/DMR/stan.Chester/intersection.DMC2Promoter.txt | cut -d ';' -f1| cut -d ':' -f2 |sort -u > /work_dir/result/Analysis/DMR/stan.Chester/DMC_genelist.txt
+$ Rscript /msPIPE/bin/GMA/gProfiler.R /work_dir/result/Analysis/DMR/stan.Chester/DMC_genelist.txt hg38 /work_dir/result/Analysis/DMR/stan.Chester/DMC_gene
+
+*** There's a problem executing the upper command.
+*** check logfile > /work_dir/result/Analysis/DMR/stan.Chester/logs/log.gprofiler.txt
+
+$ /msPIPE/bin/script/getStat.pl /work_dir/result/Analysis/DMR/stan.Chester/intersection.DMC2Promoter.txt /work_dir/result/Analysis/DMR/stan.Chester
+$ /msPIPE/bin/script/getDMR_500bp.pl /work_dir/result/Analysis/DMR/stan.Chester/methylkit/CpG_united_filtered_raw_DMBs.txt 0.5 1> /work_dir/result/Analysis/DMR/stan.Chester/DMR_0.5.bed
+
+
+ ALL PIPELINE IS COMPLETED
+
+
